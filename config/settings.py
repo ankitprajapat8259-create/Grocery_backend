@@ -19,13 +19,16 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-your-secret-ke
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
-# ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1,10.249.4.17').split(',')
-
-ALLOWED_HOSTS = [
-    "localhost",
-    "127.0.0.1",
-    "10.249.4.17",  # network IP
-]
+# ALLOWED_HOSTS - Use environment variable for production, localhost for development
+if DEBUG:
+    # Development: Allow localhost and network IPs
+    ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1,10.249.4.17').split(',')
+else:
+    # Production: Use environment variable (Render domain will be set there)
+    ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '').split(',')
+    if not ALLOWED_HOSTS or ALLOWED_HOSTS == ['']:
+        # Fallback to Render's default domain if not set
+        ALLOWED_HOSTS = ['*']
 
 # Application definition
 
@@ -42,6 +45,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'corsheaders',
     'drf_spectacular',
+    'whitenoise',  # For static file serving in production
     
     # Local apps
     'accounts',
@@ -55,6 +59,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # Add WhiteNoise after SecurityMiddleware
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -169,10 +174,27 @@ SIMPLE_JWT = {
 
 
 # CORS Configuration
-CORS_ALLOWED_ORIGINS = os.environ.get('CORS_ALLOWED_ORIGINS', 'http://localhost:5173,http://127.0.0.1:5173,http://10.249.4.17:5173').split(',')
-CORS_ALLOW_ALL_ORIGINS = True  # Allow all origins for development
+if DEBUG:
+    # Development: Allow localhost and network IP origins
+    CORS_ALLOWED_ORIGINS = os.environ.get('CORS_ALLOWED_ORIGINS', 'http://localhost:5173,http://127.0.0.1:5173,http://10.249.4.17:5173').split(',')
+    CORS_ALLOW_ALL_ORIGINS = True  # Allow all origins for development only
+else:
+    # Production: Use environment variable for Vercel frontend domains
+    CORS_ALLOWED_ORIGINS = os.environ.get('CORS_ALLOWED_ORIGINS', '').split(',')
+    CORS_ALLOW_ALL_ORIGINS = False  # Never allow all origins in production
 
 CORS_ALLOW_CREDENTIALS = True
+
+# CSRF Configuration
+if DEBUG:
+    # Development: Allow localhost and network IP origins
+    CSRF_TRUSTED_ORIGINS = os.environ.get('CSRF_TRUSTED_ORIGINS', 'http://localhost:5173,http://127.0.0.1:5173,http://10.249.4.17:5173').split(',')
+else:
+    # Production: Use environment variable for Vercel frontend domains
+    CSRF_TRUSTED_ORIGINS = os.environ.get('CSRF_TRUSTED_ORIGINS', '').split(',')
+    if not CSRF_TRUSTED_ORIGINS or CSRF_TRUSTED_ORIGINS == ['']:
+        # Fallback to allow all if not set (not recommended, but for safety)
+        CSRF_TRUSTED_ORIGINS = ['*']
 
 
 # Spectacular Configuration
@@ -182,3 +204,26 @@ SPECTACULAR_SETTINGS = {
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
 }
+
+
+# Security Settings for Production
+if not DEBUG:
+    # HTTPS settings
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_HSTS_SECONDS = 31536000  # 1 year
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    SECURE_BROWSER_XSS_FILTER = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    X_FRAME_OPTIONS = 'DENY'
+else:
+    # Development settings
+    SECURE_SSL_REDIRECT = False
+    SESSION_COOKIE_SECURE = False
+    CSRF_COOKIE_SECURE = False
+
+
+# WhiteNoise Configuration for Static Files
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
