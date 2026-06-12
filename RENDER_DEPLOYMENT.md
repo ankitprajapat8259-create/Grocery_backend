@@ -33,7 +33,7 @@ This guide explains how to deploy your Django REST API backend to Render with pr
 
 ### Build & Deploy Settings
 
-**Runtime:** Python 3
+**Runtime:** Python 3.11.10 (specified in runtime.txt)
 
 **Build Command:**
 ```bash

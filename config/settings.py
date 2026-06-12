@@ -27,7 +27,7 @@ else:
     # Production: Use environment variable (Render domain will be set there)
     ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '').split(',')
     if not ALLOWED_HOSTS or ALLOWED_HOSTS == ['']:
-        # Fallback to Render's default domain if not set
+        # Fallback to allow all if not set (not recommended, but for safety)
         ALLOWED_HOSTS = ['*']
 
 # Application definition
@@ -103,6 +103,9 @@ if DB_ENGINE == 'django.db.backends.postgresql':
             'PASSWORD': os.environ.get('DB_PASSWORD', ''),
             'HOST': os.environ.get('DB_HOST', 'localhost'),
             'PORT': os.environ.get('DB_PORT', '5432'),
+            'OPTIONS': {
+                'sslmode': 'require',  # Require SSL for Render PostgreSQL
+            },
         }
     }
 else:
