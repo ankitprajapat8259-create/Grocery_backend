@@ -90,17 +90,33 @@ TEMPLATES = [
 WSGI_APPLICATION = 'config.wsgi.application'
 
 
-# Database
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.environ.get('DB_NAME', 'grocery_db'),
-        'USER': os.environ.get('DB_USER', 'root'),
-        'PASSWORD': os.environ.get('DB_PASSWORD', 'root123'),
-        'HOST': os.environ.get('DB_HOST', 'localhost'),
-        'PORT': os.environ.get('DB_PORT', '3306'),
+# Database - Support both MySQL (local) and PostgreSQL (Render)
+DB_ENGINE = os.environ.get('DB_ENGINE', 'django.db.backends.mysql')
+
+if DB_ENGINE == 'django.db.backends.postgresql':
+    # PostgreSQL for Render
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.environ.get('DB_NAME', 'grocery_db'),
+            'USER': os.environ.get('DB_USER', 'postgres'),
+            'PASSWORD': os.environ.get('DB_PASSWORD', ''),
+            'HOST': os.environ.get('DB_HOST', 'localhost'),
+            'PORT': os.environ.get('DB_PORT', '5432'),
+        }
     }
-}
+else:
+    # MySQL for local development
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': os.environ.get('DB_NAME', 'grocery_db'),
+            'USER': os.environ.get('DB_USER', 'root'),
+            'PASSWORD': os.environ.get('DB_PASSWORD', 'root123'),
+            'HOST': os.environ.get('DB_HOST', 'localhost'),
+            'PORT': os.environ.get('DB_PORT', '3306'),
+        }
+    }
 
 
 # Password validation

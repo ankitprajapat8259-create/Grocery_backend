@@ -62,6 +62,7 @@ ALLOWED_HOSTS=your-app-name.onrender.com
 
 ### Database Settings (from your PostgreSQL database)
 ```
+DB_ENGINE=django.db.backends.postgresql
 DB_NAME=your-database-name
 DB_USER=your-database-user
 DB_PASSWORD=your-database-password
