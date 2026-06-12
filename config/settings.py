@@ -199,7 +199,14 @@ if DEBUG:
     CORS_ALLOW_ALL_ORIGINS = True  # Allow all origins for development only
 else:
     # Production: Use environment variable for Vercel frontend domains
-    CORS_ALLOWED_ORIGINS = os.environ.get('CORS_ALLOWED_ORIGINS', '').split(',')
+    # Also include localhost for development with production backend
+    production_origins = os.environ.get('CORS_ALLOWED_ORIGINS', '')
+    if production_origins:
+        CORS_ALLOWED_ORIGINS = production_origins.split(',')
+    else:
+        CORS_ALLOWED_ORIGINS = []
+    # Always allow localhost for development purposes
+    CORS_ALLOWED_ORIGINS.extend(['http://localhost:5173', 'http://127.0.0.1:5173', 'http://10.249.4.17:5173'])
     CORS_ALLOW_ALL_ORIGINS = False  # Never allow all origins in production
 
 CORS_ALLOW_CREDENTIALS = True
