@@ -11,15 +11,13 @@ class UsersConfig(AppConfig):
         User = get_user_model()
         
         # Only create superuser if environment variables are set
-        admin_username = os.environ.get('ADMIN_USERNAME')
         admin_email = os.environ.get('ADMIN_EMAIL')
         admin_password = os.environ.get('ADMIN_PASSWORD')
         
-        if admin_username and admin_email and admin_password:
-            if not User.objects.filter(username=admin_username).exists():
+        if admin_email and admin_password:
+            if not User.objects.filter(email=admin_email).exists():
                 User.objects.create_superuser(
-                    username=admin_username,
                     email=admin_email,
                     password=admin_password
                 )
-                print(f"Superuser '{admin_username}' created successfully!")
+                print(f"Superuser '{admin_email}' created successfully!")
